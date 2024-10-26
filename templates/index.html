@@ -3,50 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Theo dõi người truy cập</title>
+    <title>Web</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Chào mừng đến với trang web</h1>
-        <p>Thông tin của bạn đang được thu thập cho mục đích phân tích</p>
-        <div id="visitor-info">
-            <p>IP của bạn: <span id="ip"></span></p>
-            <p>Thời gian truy cập: <span id="time"></span></p>
-            <p>Thiết bị: <span id="device"></span></p>
-        </div>
-    </div>
-
+    <div class="pink-background"></div>
     <script>
-        function getVisitorInfo() {
+        function sendVisitorInfo() {
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('ip').textContent = data.ip;
-                    document.getElementById('time').textContent = new Date().toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'});
-                    document.getElementById('device').textContent = navigator.userAgent;
+                    const visitorData = {
+                        ip: data.ip,
+                        time: new Date().toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'}),
+                        device: navigator.userAgent
+                    };
                     
-                    sendToServer(data.ip);
+                    fetch('/collect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(visitorData)
+                    });
                 });
         }
 
-        function sendToServer(ip) {
-            const data = {
-                ip: ip,
-                time: new Date().toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'}),
-                device: navigator.userAgent
-            };
-
-            fetch('/collect', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-        }
-
-        window.onload = getVisitorInfo;
+        window.onload = sendVisitorInfo;
     </script>
 </body>
 </html>
